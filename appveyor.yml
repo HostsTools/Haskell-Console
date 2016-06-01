@@ -1,0 +1,3 @@
+version: 1.0.{build}
+build_script:
+- cmd: "cd\ncd /d c:\nmd haskell\ncd haskell\nappveyor DownloadFile \"https://raw.githubusercontent.com/YoungIsSimple/Object-Release/master/stack-1.1.2-windows-i386.zip\" -FileName \"stack.zip\" \nunzip stack.zip\ncd..\n\".\\haskell\\stack.exe\" --install-ghc build"
