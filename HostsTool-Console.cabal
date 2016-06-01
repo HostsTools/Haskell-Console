@@ -21,7 +21,7 @@ executable HostsTool-Console
   main-is:             Main.hs
   -- other-modules:
   other-extensions:    CPP
-  build-depends:       base >=4.8 && <4.9,
+  build-depends:       base ==4.*,
                        bytestring >=0.10 && <0.11,
                        http-client ==0.4.28,
                        http-client-tls ==0.2.4
