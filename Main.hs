@@ -7,15 +7,10 @@ import System.IO
 import System.IO.Error
 import System.Environment (getEnv)
 import Control.Exception (throw, catch)
-import Text.Read (readMaybe)
-import Data.String (fromString)
-import Data.Time.Clock (UTCTime)
-import qualified GitHub as G
-import qualified Data.Vector as V (find)
-import qualified Data.Text as T
-import qualified Data.Text.Encoding as T (encodeUtf8)
+import qualified Network.HTTP.Client as H
+import qualified Network.HTTP.Client.TLS as TLS
 import qualified Data.ByteString.Char8 as B
-import qualified Data.ByteString.Base64 as Base64 (decode)
+import qualified Data.ByteString.Lazy.Char8 as BL (toStrict)
 
 strBanner =
   unlines [ "HostsTool-Console v0.1 for racaljk/hosts"
@@ -49,12 +44,9 @@ strFileInUse =
           , "Hosts正在被使用，请检查是否有其他软件正在编辑它。"
           ]
 
-strOwner = fromString "racaljk"
-strRepo  = fromString "hosts"
-strFile  = fromString "hosts"
+strTargetUrl = "https://raw.githubusercontent.com/racaljk/hosts/master/hosts"
 
-strHostsBeginMark  = fromString "# HOSTSTOOL: DO NOT EDIT BELOW!\n# "
-strHostsBeginMark' = fromString "# Copyright (c) 2014-2016, racaljk.\n"
+strHostsBeginMark = "# Copyright (c) 2014-2016, racaljk."
 
 getHostsPath :: IO String
 #if defined(cygwin32_HOST_OS) || defined (mingw32_HOST_OS)
@@ -70,13 +62,13 @@ main = do
   putStrLn strBanner
   putStrLn strUpdating
   updated <- updateHosts `catch` onIOError
-                         `catch` onNetError
+                         `catch` onHttpError
   putStrLn $ if updated then strUpdated else strAlreadyLatest
   where onIOError e
           | isPermissionError e   = die strNoPermission
           | isAlreadyInUseError e = die strFileInUse
           | otherwise             = die $ show e
-        onNetError = const $ die strNetError :: G.Error -> IO Bool
+        onHttpError = die . (strNetError ++) . show :: H.HttpException -> IO a
 
 updateHosts :: IO Bool
 updateHosts = getHostsPath >>= updateHosts'
@@ -84,59 +76,32 @@ updateHosts = getHostsPath >>= updateHosts'
         process hfile = do
           size <- hFileSize hfile
           old <- B.hGet hfile (fromIntegral size)
-          new' <- transformHosts old
-          case new' of
+          new <- fetchHosts
+          case transformHosts old new of
             Nothing -> return False
-            Just new -> do
+            Just content -> do
               hSetFileSize hfile 0
               hSeek hfile AbsoluteSeek 0
-              B.hPut hfile new
+              B.hPut hfile content
               return True
 
-transformHosts :: B.ByteString -> IO (Maybe B.ByteString)
-transformHosts oldcontent = do
-  let (l , r) = B.breakSubstring strHostsBeginMark  oldcontent
-  let (l', _) = B.breakSubstring strHostsBeginMark' oldcontent
-  let old = if B.null r then l' else l
-  let updtime = readMaybe $ B.unpack $
-                B.takeWhile (/= '\n') $
-                B.drop (B.length strHostsBeginMark) r
-  commit' <- fetchLastHostsCommitSince updtime
-  case commit' of
-    Nothing -> return Nothing
-    Just commit -> do
-      content <- fetchHostsFromCommit commit
-      return $ Just $ B.concat
-        [ old
-        , reverseLn old 3
-        , strHostsBeginMark, B.pack $ show $ timeOfCommit commit, B.pack "\n"
-        , content
-        ]
-  where reverseLn s n = if l < n || B.drop (l - n) s /= ns then ns else B.empty
-          where ns = B.replicate n '\n'
-                l = B.length s
+transformHosts :: B.ByteString -> B.ByteString -> Maybe B.ByteString
+transformHosts oldcontent newcontent
+  | r == newcontent = Nothing
+  | otherwise       = Just $ B.concat
+    [ l
+    , supplyLn l 3
+    , newcontent
+    ]
+  where (l, r) = B.breakSubstring (B.pack strHostsBeginMark) oldcontent
 
-fetchHostsFromCommit :: G.Commit -> IO B.ByteString
-fetchHostsFromCommit commit = do
-  let treesha = G.treeSha $ G.gitCommitTree $ G.commitGitCommit commit
-  tree <- execGRequest $ G.treeR strOwner strRepo treesha
-  let Just blob = V.find ((== strFile) . G.gitTreePath) (G.treeGitTrees tree)
-  let blobsha = fromString $ T.unpack $ G.untagName $ G.gitTreeSha blob
-  cont <- execGRequest $ G.blobR strOwner strRepo blobsha
-  let Right r = Base64.decode $ T.encodeUtf8 $ T.concat . T.lines $
-                G.blobContent cont in
-    return r
+supplyLn :: B.ByteString -> Int -> B.ByteString
+supplyLn s n = repn $ (n-) $ B.length $ snd $ B.spanEnd (== '\n') s
+  where repn n = B.replicate (max 0 n) '\n'
 
-fetchLastHostsCommitSince :: Maybe UTCTime -> IO (Maybe G.Commit)
-fetchLastHostsCommitSince time = do
-  ret <- execGRequest $
-    G.commitsWithOptionsForR strOwner strRepo (Just 1) (opts time)
-  return $ V.find ((/= time) . Just . timeOfCommit) ret
-  where opts Nothing = [G.CommitQueryPath strFile]
-        opts (Just time) = G.CommitQuerySince time : opts Nothing
-
-timeOfCommit :: G.Commit -> UTCTime
-timeOfCommit = G.gitUserDate . G.gitCommitCommitter . G.commitGitCommit
-
-execGRequest :: G.Request 'False a -> IO a
-execGRequest req = either throw id <$> G.executeRequest' req
+fetchHosts :: IO B.ByteString
+fetchHosts = do
+  request <- H.parseUrl strTargetUrl
+  manager <- H.newManager TLS.tlsManagerSettings
+  response <- H.httpLbs request manager
+  return $ BL.toStrict $ H.responseBody response
