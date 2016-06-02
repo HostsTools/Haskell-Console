@@ -28,7 +28,7 @@ strUpdated =
           , "Hosts更新成功。"
           ]
 strAlreadyLatest =
-  unlines [ "Nothing is done. Hosts are already the latest version."
+  unlines [ "Nothing was done. Hosts are already the latest version."
           , "Hosts已是最新版本，无需更新。"
           ]
 strNoPermission =
@@ -42,12 +42,12 @@ strNetError =
           , "网络错误。请检查网络配置并重试。"
           ]
 strFileInUse =
-  unlines [ "Hosts is already in use. Please check your applications."
-          , "Hosts正在被使用，请检查是否有其他软件正在编辑它。"
+  unlines [ "Hosts file is already in use. Please check your applications."
+          , "Hosts文件正在被使用，请检查是否有其他软件正在编辑它。"
           ]
 strPause =
-  unlines [ "Press any key to exit..."
-          , "按任意键退出..."
+  unlines [ "Press enter to exit..."
+          , "按回车键退出..."
           ]
 
 strTargetUrl = "https://raw.githubusercontent.com/racaljk/hosts/master/hosts"
