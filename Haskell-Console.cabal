@@ -19,7 +19,7 @@ Tested-With:         GHC == 7.10.3
 
 executable Haskell-Console
   main-is:             Main.hs
-  -- other-modules:
+  other-modules:       Paths_Haskell_Console
   other-extensions:    CPP
   build-depends:       base ==4.*,
                        bytestring >=0.10 && <0.11,

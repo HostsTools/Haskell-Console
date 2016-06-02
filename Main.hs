@@ -7,13 +7,15 @@ import System.IO
 import System.IO.Error
 import System.Environment (getEnv)
 import Control.Exception (throw, catch)
+import Paths_Haskell_Console (version)
+import Data.Version (showVersion)
 import qualified Network.HTTP.Client as H
 import qualified Network.HTTP.Client.TLS as TLS
 import qualified Data.ByteString.Char8 as B
 import qualified Data.ByteString.Lazy.Char8 as BL (toStrict)
 
 strBanner =
-  unlines [ "HostsTool-Console v0.1 for racaljk/hosts"
+  unlines [ "HostsTool-Console " ++ showVersion version ++ " for racaljk/hosts"
           , "  Powered By: uHOOCCOOHu"
           , "(https://github.com/HostsTools/cross-platform-console)"
           ]
