@@ -6,7 +6,7 @@ import System.Exit (die)
 import System.IO
 import System.IO.Error
 import System.Environment (getEnv)
-import Control.Exception (throw, catch)
+import Control.Exception (throw, catch, finally)
 import Paths_Haskell_Console (version)
 import Data.Version (showVersion)
 import qualified Network.HTTP.Client as H
@@ -45,6 +45,10 @@ strFileInUse =
   unlines [ "Hosts is already in use. Please check your applications."
           , "Hosts正在被使用，请检查是否有其他软件正在编辑它。"
           ]
+strPause =
+  unlines [ "Press any key to exit..."
+          , "按任意键退出..."
+          ]
 
 strTargetUrl = "https://raw.githubusercontent.com/racaljk/hosts/master/hosts"
 
@@ -60,7 +64,10 @@ getHostsPath = return "/etc/hosts"
 #endif
 
 main :: IO ()
-main = do
+main = finally main' (putStrLn strPause >> getChar >> return ())
+
+main' :: IO ()
+main' = do
   putStrLn strBanner
   putStrLn strUpdating
   updated <- updateHosts `catch` onIOError
