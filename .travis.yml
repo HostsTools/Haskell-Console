@@ -69,6 +69,8 @@ before_install:
 - CABALARGS=""
 - if [ "x$GHCVER" = "xhead" ]; then CABALARGS=--allow-newer; fi
 
+- PROGNAME="Haskell-Console"
+
 # Download and unpack the stack executable
 - export PATH=/opt/ghc/$GHCVER/bin:/opt/cabal/$CABALVER/bin:$HOME/.local/bin:$PATH
 - mkdir -p ~/.local/bin
@@ -97,7 +99,8 @@ script:
 - |
   case "$BUILD" in
     stack)
-    stack --no-terminal $ARGS test --haddock --no-haddock-deps --ghc-options="-Wall -fno-warn-unused-do-bind"
+      stack --no-terminal $ARGS test --haddock --no-haddock-deps --ghc-options="-Wall -fno-warn-unused-do-bind"
+      stack exec $PROGNAME
       ;;
     cabal)
       cabal configure --enable-tests --enable-benchmarks -v2 --ghc-options="-O0"
@@ -110,5 +113,6 @@ script:
       SRC_TGZ=$(cabal info . | awk '{print $2;exit}').tar.gz && \
         (cd dist && cabal install --enable-tests --force-reinstalls "$SRC_TGZ" || \
             [ "$CABALVER" == "1.16" ])
+      cabal run
       ;;
   esac
