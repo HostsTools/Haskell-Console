@@ -5,6 +5,7 @@
 import System.Exit (die)
 import System.IO
 import System.IO.Error
+import System.Directory
 import System.Environment (getEnv)
 import Control.Exception (throw, catch, finally)
 import Paths_Haskell_Console (version)
@@ -71,14 +72,23 @@ main' = do
   hSetEncoding stdout localeEncoding
   putStrLn strBanner
   putStrLn strUpdating
-  updated <- updateHosts `catch` onIOError
-                         `catch` onHttpError
+  updated <- (addHostsRWPermission >> updateHosts) `catch` onIOError
+                                                   `catch` onHttpError
   putStrLn $ if updated then strUpdated else strAlreadyLatest
   where onIOError e
           | isPermissionError e   = die strNoPermission
           | isAlreadyInUseError e = die strFileInUse
           | otherwise             = die $ show e
         onHttpError = die . (strNetError ++) . show :: H.HttpException -> IO a
+
+addHostsRWPermission :: IO ()
+addHostsRWPermission = do
+  path <- getHostsPath
+  per <- getPermissions path
+  if readable per && writable per then
+    return ()
+  else
+    setPermissions path per{readable = True, writable = True}
 
 updateHosts :: IO Bool
 updateHosts = getHostsPath >>= updateHosts'
