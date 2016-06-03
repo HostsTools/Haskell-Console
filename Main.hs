@@ -68,6 +68,7 @@ main = finally main' (putStrLn strPause >> getChar >> return ())
 
 main' :: IO ()
 main' = do
+  hSetEncoding stdout localeEncoding
   putStrLn strBanner
   putStrLn strUpdating
   updated <- updateHosts `catch` onIOError
