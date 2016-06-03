@@ -67,9 +67,9 @@ before_install:
 
 # We want to always allow newer versions of packages when building on GHC HEAD
 - CABALARGS=""
+- PROGNAME="Haskell-Console"
 - if [ "x$GHCVER" = "xhead" ]; then CABALARGS=--allow-newer; fi
 
-- PROGNAME="Haskell-Console"
 
 # Download and unpack the stack executable
 - export PATH=/opt/ghc/$GHCVER/bin:/opt/cabal/$CABALVER/bin:$HOME/.local/bin:$PATH
@@ -100,7 +100,7 @@ script:
   case "$BUILD" in
     stack)
       stack --no-terminal $ARGS test --haddock --no-haddock-deps --ghc-options="-Wall -fno-warn-unused-do-bind"
-      stack exec $PROGNAME
+      stack exec $PROGNAME</dev/zero
       ;;
     cabal)
       cabal configure --enable-tests --enable-benchmarks -v2 --ghc-options="-O0"
@@ -113,6 +113,6 @@ script:
       SRC_TGZ=$(cabal info . | awk '{print $2;exit}').tar.gz && \
         (cd dist && cabal install --enable-tests --force-reinstalls "$SRC_TGZ" || \
             [ "$CABALVER" == "1.16" ])
-      cabal run
+      cabal run</dev/zero
       ;;
   esac
