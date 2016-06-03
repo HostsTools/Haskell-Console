@@ -1,12 +1,18 @@
-version: 1.0.{build}
+version: 1.1.{build}
+branches:
+  except:
+  - test
+  - debug
+  - runtest
+  - onlinetest
 skip_tags: true
-init:
-- ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+install:
+- cmd: "cd\nmd haskell\ncd haskell\nappveyor DownloadFile \"https://raw.githubusercontent.com/YoungIsSimple/Object-Release/1/stack.sfx.exe\" -FileName \"stack.exe\" \nstack.exe\ncd .."
 cache:
 - C:\Users\appveyor\AppData\Roaming\stack
 - C:\Users\appveyor\AppData\Local\Programs\stack
-- c:\mingw\msys
-- C:\msys64
+- C:\mingw\msys
 build_script:
-- cmd: "cd\ncd /d c:\nmd haskell\ncd haskell\nappveyor DownloadFile \"https://raw.githubusercontent.com/YoungIsSimple/Object-Release/1/stack.sfx.exe\" -FileName \"stack.exe\" \nstack.exe\n\"c:\\haskell\\stack.exe\" --install-ghc build"
-test: off
+- cmd: '"c:\haskell\stack.exe" build'
+test_script:
+- cmd: test.bat
