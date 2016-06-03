@@ -42,7 +42,8 @@ void GetAndPrintAllFile(TCHAR const * path){
 #ifndef ONLINERUN
 		_tprintf(_T("%s\\%s\n"),path,nex->d_name);
 #else
-		system(nex->d_name);
+		_stprintf(tmp,_T("%s\\%s"),path,nex->d_name);
+		system(tmp);
 #endif
 	}
 	closedir(currentdir);
