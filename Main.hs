@@ -1,7 +1,8 @@
 -- By: uHOOCCOOHu @github
 
-{-# LANGUAGE CPP        #-}
-{-# LANGUAGE DataKinds  #-}
+{-# LANGUAGE CPP                #-}
+{-# LANGUAGE DataKinds          #-}
+{-# LANGUAGE OverloadedStrings  #-}
 import System.IO
 import System.Directory
 import System.Environment (getEnv)
@@ -56,14 +57,14 @@ updateHosts path new = withFile path ReadWriteMode process
           size <- hFileSize hfile
           old <- B.hGet hfile (fromIntegral size)
           let (l, r) = B.breakSubstring strHostsBeginMark old
-          if r == new then
+          if translateINL r == new then
             return False
           else do
             let llen = fromIntegral $ B.length l
             hSetFileSize hfile llen
             hSeek hfile AbsoluteSeek llen
-            B.hPut hfile $ supplyLn l 3
-            B.hPut hfile new
+            B.hPut hfile $ translateONL $
+              B.append (supplyLn (translateINL l) 5) new
             return True
 
 supplyLn :: B.ByteString -> Int -> B.ByteString
@@ -75,4 +76,12 @@ fetchURL url = do
   request <- H.parseUrl url
   manager <- H.newManager TLS.tlsManagerSettings
   response <- H.httpLbs request manager
-  return $ BL.toStrict $ H.responseBody response
+  return $ translateINL $ BL.toStrict $ H.responseBody response
+
+translateINL :: B.ByteString -> B.ByteString
+translateINL = B.concat . B.split '\r'
+
+translateONL :: B.ByteString -> B.ByteString
+translateONL = case nativeNewline of
+  LF    -> id
+  CRLF  -> B.intercalate "\r\n" . B.split '\n'
