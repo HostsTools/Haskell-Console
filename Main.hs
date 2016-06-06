@@ -35,8 +35,8 @@ getHostsPath = (++ "/system32/drivers/etc/hosts") <$> getEnv "SystemRoot"
 getHostsPath = return "/etc/hosts"
 #endif
 
-main' :: IO ()
-main' = do
+main :: IO ()
+main = do
   putStrLn strBanner
   hostspath <- getHostsPath
   ensureRWPermission hostspath
