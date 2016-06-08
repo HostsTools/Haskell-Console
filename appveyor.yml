@@ -7,7 +7,7 @@ branches:
   - onlinetest
 skip_tags: true
 install:
-- ps: "echo \"$pwd\"\nappveyor DownloadFile \"https://www.stackage.org/stack/windows-x86_64\" -FileName \"stack.zip\"\nunzip stack.zip -d stack\ncp ./stack/stack.exe ./""
+- ps: "echo \"$pwd\"\nappveyor DownloadFile \"https://www.stackage.org/stack/windows-x86_64\" -FileName \"stack.zip\"\nunzip stack.zip -d stack\ncp ./stack/stack.exe ./"
 cache:
 - C:\Users\appveyor\AppData\Roaming\stack
 - C:\mingw\msys
