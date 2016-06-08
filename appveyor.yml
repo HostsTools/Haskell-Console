@@ -10,7 +10,7 @@ install:
 - ps: >-
     echo "$pwd"
 
-    curl.exe -L https://www.stackage.org/stack/windows-x86_64>./stack.zip
+    curl.exe -L https://www.stackage.org/stack/windows-x86_64 >./stack.zip
 
     md stack
 
@@ -23,8 +23,14 @@ install:
     cp ./stack/stack.exe ./
 cache:
 - C:\Users\appveyor\AppData\Roaming\stack
-- C:\Users\appveyor\AppData\Local\Programs\stack
 - C:\mingw\msys
+- C:\Users\appveyor\AppData\Local\Programs\stack
 build_script:
 - ps: .\stack install --test --no-terminal --resolver lts-6 --local-bin-path="." --ghc-options="-O2 -Wall"
 test: off
+deploy:
+- provider: GitHub
+  auth_token:
+    secure: m4469zMLZPTSvWfHcPmLLpdTPdSF+qyVJINdOwR+t8i5J1rOz35EVU+oIMtpXP2n
+  artifact: Haskell-Console.exe
+  draft: true
