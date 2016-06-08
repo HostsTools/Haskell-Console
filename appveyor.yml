@@ -9,17 +9,8 @@ skip_tags: true
 install:
 - ps: >-
     echo "$pwd"
-
-    curl.exe -L https://www.stackage.org/stack/windows-x86_64 >./stack.zip
-
-    md stack
-
-    $shellApp = New-Object -ComObject Shell.Application
-
-    $files = $shellApp.NameSpace("$pwd\stack.zip").Items()
-
-    $shellApp.NameSpace("$pwd\stack\").CopyHere($files)
-
+    appveyor DownloadFile "https://www.stackage.org/stack/windows-x86_64" -FileName "stack.zip"
+    unzip stack.zip -d stack
     cp ./stack/stack.exe ./
 cache:
 - C:\Users\appveyor\AppData\Roaming\stack
