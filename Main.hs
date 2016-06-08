@@ -5,7 +5,6 @@
 {-# LANGUAGE OverloadedStrings  #-}
 import System.IO
 import System.Directory
-import System.Environment (getEnv)
 import Control.Monad
 import Paths_Haskell_Console (version)
 import Data.Version (showVersion)
@@ -13,8 +12,12 @@ import qualified Network.HTTP.Client as H
 import qualified Network.HTTP.Client.TLS as TLS
 import qualified Data.ByteString.Char8 as B
 import qualified Data.ByteString.Lazy.Char8 as BL (toStrict)
+#if defined(cygwin32_HOST_OS) || defined (mingw32_HOST_OS)
+import System.Environment (getEnv)
+#endif
 
 strBanner :: String
+strUpdated :: String
 strNoUpdate :: String
 strBanner = unlines
             [ "HostsTool-Console " ++ showVersion version ++ " for racaljk/hosts"
@@ -69,7 +72,7 @@ updateHosts path new = withFile path ReadWriteMode process
 
 supplyLn :: B.ByteString -> Int -> B.ByteString
 supplyLn s n = repn $ (n-) $ B.length $ snd $ B.spanEnd (== '\n') s
-  where repn n = B.replicate (max 0 n) '\n'
+  where repn x = B.replicate (max 0 x) '\n'
 
 fetchURL :: String -> IO B.ByteString
 fetchURL url = do
