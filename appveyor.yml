@@ -7,11 +7,7 @@ branches:
   - onlinetest
 skip_tags: true
 install:
-- ps: >-
-    echo "$pwd"
-    appveyor DownloadFile "https://www.stackage.org/stack/windows-x86_64" -FileName "stack.zip"
-    unzip stack.zip -d stack
-    cp ./stack/stack.exe ./
+- ps: "echo \"$pwd\"\nappveyor DownloadFile \"https://www.stackage.org/stack/windows-x86_64\" -FileName \"stack.zip\"\nunzip stack.zip -d stack\ncp ./stack/stack.exe ./""
 cache:
 - C:\Users\appveyor\AppData\Roaming\stack
 - C:\mingw\msys
@@ -19,9 +15,3 @@ cache:
 build_script:
 - ps: .\stack install --test --no-terminal --resolver lts-6 --local-bin-path="." --ghc-options="-O2 -Wall"
 test: off
-deploy:
-- provider: GitHub
-  auth_token:
-    secure: m4469zMLZPTSvWfHcPmLLpdTPdSF+qyVJINdOwR+t8i5J1rOz35EVU+oIMtpXP2n
-  artifact: Haskell-Console.exe
-  draft: true

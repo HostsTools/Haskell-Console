@@ -88,11 +88,3 @@ script:
       cabal test
       cp dist/build/Haskell-Console/Haskell-Console ./
   esac
-deploy:
-  provider: releases
-  api_key:
-    secure: lvplWhezcRVGbArWvPJPQjLaRwl6qYXm8dLMHoc9UxVCR5rkC9HB7PEXjeVH2n8X9pQWfFOqLGCokqskuCyW4M2deDFoQFahlD9LYH53FMjLIM/DroNfltMLi5En4b+w1RK7qq3Mqgvxj7M9eMbDba22ILw8zQC/8gkl/xZKgBzfZj2iJIzxxAoh6Kc1Z3a+GBnoFwgusTDzL+dY5zuaF80V6x9rB4dFdB0Tlb9HB8Ff1+L0CYY6r6jT32iLXaBZTPfxAWU1sjhz8WxcASrKD+prVF6tQrLeMTBBHpiCBUoebvAadftiB2CY1IAUausFXgs6oQDKNyXGDA3CzIedQifsTzDQUkAx6pPaLtM09tUEZqo6i5RNCuWzevAixJSPHgaziqFlz2CpNE585OHPXFzUnni0PdCQHtQxAE8WSg+3fHzSR6yzydpH1bWHsSrXN8iE3KjIEGgDe4viNSh42oQk/odGUxYREWLMVH/lFR3Ez39w5Lsowv4rm+sjZkHiHOKTzixW7KF0nQTrxZro6WzQfD1BRsZoluUavNW3enbdonhab2Qc02ysWxzI0AynND4XeMBj/dSwjOiX8JVcWkYAUGSWFZnNeqXVc0zSPkn4siIsY6lZpoN1JTdpEiM+m2f89WJ9z96YY4kZSDBu/H15s//ONEq5Q4/Wisn3qPU=
-  file: Haskell-Console
-  on:
-    repo: HostsTools/Haskell-Console
-    tags: true
