@@ -1,76 +1,57 @@
-# Copy these contents into the root directory of your Github project in a file
-# named .travis.yml
-
-# Use new container infrastructure to enable caching
 sudo: true
-
-# Choose a lightweight base image; we provide our own build tools.
 language: c
-
-# Caching so the next build will be fast too.
 cache:
   directories:
-  - $HOME/.ghc
-  - $HOME/.cabal
-  - $HOME/.stack
-
-# The different configurations we want to test. We have BUILD=cabal which uses
-# cabal-install, and BUILD=stack which uses Stack. More documentation on each
-# of those below.
-#
-# We set the compiler values here to tell Travis to use a different
-# cache file per set of arguments.
-#
-# If you need to have different apt packages for each combination in the
-# matrix, you can use a line such as:
-#     addons: {apt: {packages: [libfcgi-dev,libgmp-dev]}}
+  - "$HOME/.ghc"
+  - "$HOME/.cabal"
+  - "$HOME/.stack"
 matrix:
   include:
-  # We grab the appropriate GHC and cabal-install versions from hvr's PPA. See:
-  # https://github.com/hvr/multi-ghc-travis
   - env: BUILD=cabal GHCVER=7.10.3 CABALVER=1.22
     compiler: ": #GHC 7.10.3"
-    addons: {apt: {packages: [cabal-install-1.22,ghc-7.10.3], sources: [hvr-ghc]}}
-
-  # Build with the newest GHC and cabal-install. This is an accepted failure,
-  # see below.
+    addons:
+      apt:
+        packages:
+        - cabal-install-1.22
+        - ghc-7.10.3
+        sources:
+        - hvr-ghc
   - env: BUILD=cabal GHCVER=head  CABALVER=head
     compiler: ": #GHC HEAD"
-    addons: {apt: {packages: [cabal-install-head,ghc-head], sources: [hvr-ghc]}}
-
-  # The Stack builds. We can pass in arbitrary Stack arguments via the ARGS
-  # variable, such as using --stack-yaml to point to a different file.
+    addons:
+      apt:
+        packages:
+        - cabal-install-head
+        - ghc-head
+        sources:
+        - hvr-ghc
   - env: BUILD=stack ARGS="--resolver lts-6"
     compiler: ": #stack 7.10.3"
-    addons: {apt: {packages: [ghc-7.10.3], sources: [hvr-ghc]}}
-
-  # Nightly builds are allowed to fail
+    addons:
+      apt:
+        packages:
+        - ghc-7.10.3
+        sources:
+        - hvr-ghc
   - env: BUILD=stack ARGS="--resolver nightly"
     compiler: ": #stack nightly"
-    addons: {apt: {packages: [libgmp-dev]}}
-
+    addons:
+      apt:
+        packages:
+        - libgmp-dev
   - env: BUILD=stack ARGS="--resolver lts-6"
     compiler: ": #stack 7.10.3 osx"
     os: osx
-
   - env: BUILD=stack ARGS="--resolver nightly"
     compiler: ": #stack nightly osx"
     os: osx
-
   allow_failures:
   - env: BUILD=cabal GHCVER=head  CABALVER=head
   - env: BUILD=stack ARGS="--resolver nightly"
-
 before_install:
-# Using compiler above sets CC to an invalid value, so unset it
 - unset CC
-
-# We want to always allow newer versions of packages when building on GHC HEAD
 - CABALARGS=""
 - if [ "x$GHCVER" = "xhead" ]; then CABALARGS=--allow-newer; fi
-
-
-# Download and unpack the stack executable
 - export PATH=/opt/ghc/$GHCVER/bin:/opt/cabal/$CABALVER/bin:$HOME/.local/bin:$PATH
 - mkdir -p ~/.local/bin
 - |
@@ -81,35 +62,38 @@ before_install:
     curl -L https://www.stackage.org/stack/linux-x86_64 | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
   fi
 install:
-- echo "$(ghc --version) [$(ghc --print-project-git-commit-id 2> /dev/null || echo '?')]"
+- ghc --version
 - if [ -f configure.ac ]; then autoreconf -i; fi
 - |
   case "$BUILD" in
     stack)
-      stack --no-terminal --install-ghc $ARGS test --only-dependencies
+      echo "stack: $(stack --version)"
+      stack test --no-terminal --install-ghc $ARGS --only-dependencies --ghc-options="-O2"
       ;;
     cabal)
       cabal --version
       travis_retry cabal update
-      cabal install --only-dependencies --enable-tests --enable-benchmarks --force-reinstalls --ghc-options=-O0 --reorder-goals --max-backjumps=-1 $CABALARGS
+      cabal install --only-dependencies --enable-tests --enable-benchmarks --force-reinstalls --ghc-options=-O2 --reorder-goals --max-backjumps=-1 $CABALARGS
       ;;
   esac
 script:
 - |
   case "$BUILD" in
     stack)
-      stack --no-terminal $ARGS test --haddock --no-haddock-deps --ghc-options="-Wall -fno-warn-unused-do-bind"
+      stack install --test --no-terminal $ARGS --local-bin-path="." --ghc-options="-O2 -Wall"
       ;;
     cabal)
-      cabal configure --enable-tests --enable-benchmarks -v2 --ghc-options="-O0"
-      cabal build
-      cabal check || [ "$CABALVER" == "1.16" ]
+      cabal configure --enable-tests --enable-benchmarks -v2 --ghc-options="-O2"
+      cabal build --ghc-options="-O2 -Wall"
+      cabal check
       cabal test
-      cabal copy
-      # cabal sdist fails on cabal 1.16:
-      cabal sdist || [ "$CABALVER" == "1.16" ]
-      SRC_TGZ=$(cabal info . | awk '{print $2;exit}').tar.gz && \
-        (cd dist && cabal install --enable-tests --force-reinstalls "$SRC_TGZ" || \
-            [ "$CABALVER" == "1.16" ])
-      ;;
+      cp dist/build/Haskell-Console/Haskell-Console ./
   esac
+deploy:
+  provider: releases
+  api_key:
+    secure: lvplWhezcRVGbArWvPJPQjLaRwl6qYXm8dLMHoc9UxVCR5rkC9HB7PEXjeVH2n8X9pQWfFOqLGCokqskuCyW4M2deDFoQFahlD9LYH53FMjLIM/DroNfltMLi5En4b+w1RK7qq3Mqgvxj7M9eMbDba22ILw8zQC/8gkl/xZKgBzfZj2iJIzxxAoh6Kc1Z3a+GBnoFwgusTDzL+dY5zuaF80V6x9rB4dFdB0Tlb9HB8Ff1+L0CYY6r6jT32iLXaBZTPfxAWU1sjhz8WxcASrKD+prVF6tQrLeMTBBHpiCBUoebvAadftiB2CY1IAUausFXgs6oQDKNyXGDA3CzIedQifsTzDQUkAx6pPaLtM09tUEZqo6i5RNCuWzevAixJSPHgaziqFlz2CpNE585OHPXFzUnni0PdCQHtQxAE8WSg+3fHzSR6yzydpH1bWHsSrXN8iE3KjIEGgDe4viNSh42oQk/odGUxYREWLMVH/lFR3Ez39w5Lsowv4rm+sjZkHiHOKTzixW7KF0nQTrxZro6WzQfD1BRsZoluUavNW3enbdonhab2Qc02ysWxzI0AynND4XeMBj/dSwjOiX8JVcWkYAUGSWFZnNeqXVc0zSPkn4siIsY6lZpoN1JTdpEiM+m2f89WJ9z96YY4kZSDBu/H15s//ONEq5Q4/Wisn3qPU=
+  file: Haskell-Console
+  on:
+    repo: HostsTools/Haskell-Console
+    tags: true
