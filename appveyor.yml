@@ -1,4 +1,4 @@
-version: 1.1.{build}
+version: 1.0.0.{build}
 branches:
   except:
   - test
@@ -7,12 +7,24 @@ branches:
   - onlinetest
 skip_tags: true
 install:
-- cmd: "cd\nmd haskell\ncd haskell\nappveyor DownloadFile \"https://raw.githubusercontent.com/YoungIsSimple/Object-Release/1/stack.sfx.exe\" -FileName \"stack.exe\" \nstack.exe\ncd .."
+- ps: >-
+    echo "$pwd"
+
+    curl.exe -L https://www.stackage.org/stack/windows-x86_64>./stack.zip
+
+    md stack
+
+    $shellApp = New-Object -ComObject Shell.Application
+
+    $files = $shellApp.NameSpace("$pwd\stack.zip").Items()
+
+    $shellApp.NameSpace("$pwd\stack\").CopyHere($files)
+
+    cp ./stack/stack.exe ./
 cache:
 - C:\Users\appveyor\AppData\Roaming\stack
 - C:\Users\appveyor\AppData\Local\Programs\stack
 - C:\mingw\msys
 build_script:
-- cmd: '"c:\haskell\stack.exe" build'
-test_script:
-- cmd: test.bat
+- ps: .\stack install --test --no-terminal --resolver lts-6 --local-bin-path="." --ghc-options="-O2 -Wall"
+test: off
