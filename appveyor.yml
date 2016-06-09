@@ -13,5 +13,5 @@ cache:
 - C:\mingw\msys
 - C:\Users\appveyor\AppData\Local\Programs\stack
 build_script:
-- ps: .\stack install --test --no-terminal --resolver lts-6 --local-bin-path="." --ghc-options="-O2 -Wall"
+- ps: .\stack --install-ghc install --test --no-terminal --resolver lts-6 --local-bin-path="." --ghc-options="-O2 -Wall"
 test: off
