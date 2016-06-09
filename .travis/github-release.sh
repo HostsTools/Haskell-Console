@@ -150,7 +150,7 @@ for FILE in $RELEASEFILES; do
     echo "Warning: $FILE not a file"
     continue
   fi
-  FILESIZE=`stat -c '%s' "$FILE"`
+  FILESIZE=`wc -c <"$FILE"`
   FILENAME=`basename $FILE`
   echo -n "Uploading $FILENAME... "
   RESULT=`curl -s -w "\n%{http_code}\n"                   \
