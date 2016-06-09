@@ -29,7 +29,7 @@
 # IN THE SOFTWARE.
 
 # This script provides a simple continuous deployment
-# solution that allows Travis CI to publish a new GitHub 
+# solution that allows Travis CI to publish a new GitHub
 # release and upload assets to it whenever a tag is pushed:
 # git tag; git push --tags
 #
@@ -134,13 +134,13 @@ RESULT=`curl -s -w "\n%{http_code}\n"     \
   "https://api.github.com/repos/$REPO/releases"`
 if [ "`echo "$RESULT" | tail -1`" != "201" ]; then
   echo FAILED
-  echo "$RESULT" 
+  echo "$RESULT"
   exit 1
-fi 
+fi
 RELEASEID=`echo "$RESULT" | sed -ne 's/^  "id": \(.*\),$/\1/p'`
 if [[ -z "$RELEASEID" ]]; then
   echo FAILED
-  echo "$RESULT" 
+  echo "$RESULT"
   exit 1
 fi
 echo DONE
@@ -161,12 +161,12 @@ for FILE in $RELEASEFILES; do
     "https://uploads.github.com/repos/$REPO/releases/$RELEASEID/assets?name=$FILENAME&size=$FILESIZE"`
   if [ "`echo "$RESULT" | tail -1`" != "201" ]; then
     echo FAILED
-    echo "$RESULT" 
+    echo "$RESULT"
     exit 1
   fi
   echo DONE
-done 
-
+done
+: '
 echo -n "Publishing release... "
 JSON=$(cat <<EOF
 {
@@ -183,6 +183,7 @@ if [ "`echo "$RESULT" | tail -1`" = "200" ]; then
   echo DONE
 else
   echo FAILED
-  echo "$RESULT" 
+  echo "$RESULT"
   exit 1
-fi 
+fi
+'
