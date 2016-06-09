@@ -12,6 +12,7 @@ matrix:
       apt:
         packages:
         - ghc-7.10.3
+        - ghc-7.10.3:i386
         sources:
         - hvr-ghc
   - env: ARGS="--resolver nightly"
