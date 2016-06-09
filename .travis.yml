@@ -11,7 +11,9 @@ matrix:
     addons:
       apt:
         packages:
-        - libgmp-dev
+        - ghc-7.10.3
+        sources:
+        - hvr-ghc
   - env: ARGS="--resolver nightly"
     compiler: ": #stack nightly"
     addons:
