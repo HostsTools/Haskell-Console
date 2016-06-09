@@ -6,14 +6,12 @@ cache:
   - "$HOME/.stack"
 matrix:
   include:
-  - env: RELEASEOS="Windows" ARGS="--resolver lts-6"
+  - env: RELEASEOS="Linux" ARGS="--resolver lts-6"
     compiler: ": #stack 7.10.3"
     addons:
       apt:
         packages:
-        - ghc-7.10.3
-        sources:
-        - hvr-ghc
+        - libgmp-dev
   - env: ARGS="--resolver nightly"
     compiler: ": #stack nightly"
     addons:
