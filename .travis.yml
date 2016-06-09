@@ -3,56 +3,24 @@ language: c
 cache:
   directories:
   - "$HOME/.ghc"
-  - "$HOME/.cabal"
   - "$HOME/.stack"
 matrix:
   include:
-  - env: BUILD=cabal GHCVER=7.10.3 CABALVER=1.22
-    compiler: ": #GHC 7.10.3"
-    addons:
-      apt:
-        packages:
-        - cabal-install-1.22
-        - ghc-7.10.3
-        sources:
-        - hvr-ghc
-  - env: BUILD=cabal GHCVER=head  CABALVER=head
-    compiler: ": #GHC HEAD"
-    addons:
-      apt:
-        packages:
-        - cabal-install-head
-        - ghc-head
-        sources:
-        - hvr-ghc
-  - env: BUILD=stack ARGS="--resolver lts-6"
+  - env: ARGS="--resolver lts-6"
     compiler: ": #stack 7.10.3"
-    addons:
-      apt:
-        packages:
-        - ghc-7.10.3
-        sources:
-        - hvr-ghc
-  - env: BUILD=stack ARGS="--resolver nightly"
+  - env: ARGS="--resolver nightly"
     compiler: ": #stack nightly"
-    addons:
-      apt:
-        packages:
-        - libgmp-dev
-  - env: BUILD=stack ARGS="--resolver lts-6"
+  - env: ARGS="--resolver lts-6"
     compiler: ": #stack 7.10.3 osx"
     os: osx
-  - env: BUILD=stack ARGS="--resolver nightly"
+  - env: ARGS="--resolver nightly"
     compiler: ": #stack nightly osx"
     os: osx
   allow_failures:
-  - env: BUILD=cabal GHCVER=head  CABALVER=head
-  - env: BUILD=stack ARGS="--resolver nightly"
+  - env: ARGS="--resolver nightly"
 before_install:
 - unset CC
-- CABALARGS=""
-- if [ "x$GHCVER" = "xhead" ]; then CABALARGS=--allow-newer; fi
-- export PATH=/opt/ghc/$GHCVER/bin:/opt/cabal/$CABALVER/bin:$HOME/.local/bin:$PATH
+- export PATH=$HOME/.local/bin:$PATH
 - mkdir -p ~/.local/bin
 - |
   if [ `uname` = "Darwin" ]
@@ -63,29 +31,7 @@ before_install:
   fi
 install:
 - if [ -f configure.ac ]; then autoreconf -i; fi
-- |
-  case "$BUILD" in
-    stack)
-      echo "stack: $(stack --version)"
-      stack test --no-terminal --install-ghc $ARGS --only-dependencies --ghc-options="-O2"
-      ;;
-    cabal)
-      cabal --version
-      travis_retry cabal update
-      cabal install --only-dependencies --enable-tests --enable-benchmarks --force-reinstalls --ghc-options=-O2 --reorder-goals --max-backjumps=-1 $CABALARGS
-      ;;
-  esac
+- stack test --no-terminal --install-ghc $ARGS --only-dependencies --ghc-options="-O2"
 script:
-- |
-  case "$BUILD" in
-    stack)
-      stack install --test --no-terminal $ARGS --local-bin-path="." --ghc-options="-O2 -Wall"
-      ;;
-    cabal)
-      cabal configure --enable-tests --enable-benchmarks -v2 --ghc-options="-O2"
-      cabal build --ghc-options="-O2 -Wall"
-      cabal check
-      cabal test
-      cp dist/build/Haskell-Console/Haskell-Console ./
-  esac
-after_success: chmod +x .travis/github-release.sh&&(.travis/github-release.sh "$TRAVIS_REPO_SLUG" "$TRAVIS_TAG" Haskell-Console)
+- stack install --test --no-terminal $ARGS --local-bin-path="." --ghc-options="-O2 -Wall"
+after_success: chmod +x .travis/github-release.sh && (.travis/github-release.sh "$TRAVIS_REPO_SLUG" "$TRAVIS_TAG" Haskell-Console)
