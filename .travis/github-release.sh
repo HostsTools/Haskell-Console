@@ -79,9 +79,15 @@
 
 set -e
 
+RELEASEOS=$1 && shift
 REPO=$1 && shift
 RELEASE=$1 && shift
 RELEASEFILES=$@
+
+if [ -z "$RELEASEOS" ]; then
+  echo "Not release."
+  exit 0
+fi
 
 if ! TAG=`git describe --exact-match --tags 2>/dev/null`; then
   echo "This commit is not a tag so not creating a release"
@@ -158,7 +164,7 @@ for FILE in $RELEASEFILES; do
     -H "Accept: application/vnd.github.manifold-preview"  \
     -H "Content-Type: application/zip"                    \
     --data-binary "@$FILE"                                \
-    "https://uploads.github.com/repos/$REPO/releases/$RELEASEID/assets?name=$FILENAME&size=$FILESIZE"`
+    "https://uploads.github.com/repos/$REPO/releases/$RELEASEID/assets?name=$FILENAME-$RELEASEOS&size=$FILESIZE"`
   if [ "`echo "$RESULT" | tail -1`" != "201" ]; then
     echo FAILED
     echo "$RESULT"

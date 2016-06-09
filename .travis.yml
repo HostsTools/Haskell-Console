@@ -6,11 +6,11 @@ cache:
   - "$HOME/.stack"
 matrix:
   include:
-  - env: ARGS="--resolver lts-6"
+  - env: RELEASEOS="Windows" ARGS="--resolver lts-6"
     compiler: ": #stack 7.10.3"
   - env: ARGS="--resolver nightly"
     compiler: ": #stack nightly"
-  - env: ARGS="--resolver lts-6"
+  - env: RELEASEOS="MacOS" ARGS="--resolver lts-6"
     compiler: ": #stack 7.10.3 osx"
     os: osx
   - env: ARGS="--resolver nightly"
@@ -34,4 +34,4 @@ install:
 - stack test --no-terminal --install-ghc $ARGS --only-dependencies --ghc-options="-O2"
 script:
 - stack install --test --no-terminal $ARGS --local-bin-path="." --ghc-options="-O2 -Wall"
-after_success: chmod +x .travis/github-release.sh && (.travis/github-release.sh "$TRAVIS_REPO_SLUG" "$TRAVIS_TAG" Haskell-Console)
+after_success: chmod +x .travis/github-release.sh && (.travis/github-release.sh "$RELEASEOS" "$TRAVIS_REPO_SLUG" "$TRAVIS_TAG" Haskell-Console)
