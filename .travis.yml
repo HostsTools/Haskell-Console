@@ -8,8 +8,18 @@ matrix:
   include:
   - env: RELEASEOS="Windows" ARGS="--resolver lts-6"
     compiler: ": #stack 7.10.3"
+    addons:
+      apt:
+        packages:
+        - ghc-7.10.3
+        sources:
+        - hvr-ghc
   - env: ARGS="--resolver nightly"
     compiler: ": #stack nightly"
+    addons:
+      apt:
+        packages:
+        - libgmp-dev
   - env: RELEASEOS="MacOS" ARGS="--resolver lts-6"
     compiler: ": #stack 7.10.3 osx"
     os: osx
