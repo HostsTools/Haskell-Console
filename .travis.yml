@@ -13,7 +13,7 @@ matrix:
         packages:
         - libgmp-dev
         - ghc
-        - ia32-libs
+        - lib32z1
   - env: ARGS="--resolver nightly"
     compiler: ": #stack nightly"
     addons:
@@ -21,7 +21,7 @@ matrix:
         packages:
         - libgmp-dev
         - ghc
-        - ia32-libs
+        - lib32z1
   - env: RELEASEOS="MacOS" ARGS="--resolver lts-6"
     compiler: ": #stack 7.10.3 osx"
     os: osx
