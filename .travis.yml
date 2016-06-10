@@ -12,14 +12,14 @@ matrix:
       apt:
         packages:
         - libgmp-dev
-        - libgmp-dev:i386
+        - ghc
   - env: ARGS="--resolver nightly"
     compiler: ": #stack nightly"
     addons:
       apt:
         packages:
         - libgmp-dev
-        - libgmp-dev:i386
+        - ghc
   - env: RELEASEOS="MacOS" ARGS="--resolver lts-6"
     compiler: ": #stack 7.10.3 osx"
     os: osx
@@ -41,10 +41,13 @@ before_install:
   fi
 install:
 - if [ -f configure.ac ]; then autoreconf -i; fi
-- stack test --no-terminal --install-ghc $ARGS --only-dependencies --ghc-options="-O2"
-- stack test --no-terminal --install-ghc --arch i386 $ARGS --only-dependencies --ghc-options="-O2"
 script:
-- mkdir i386
-- stack install --test --no-terminal $ARGS --local-bin-path="." --ghc-options="-O2 -Wall"
-- stack install --test --no-terminal --arch i386 $ARGS --local-bin-path="i386" --ghc-options="-O2 -Wall"
+- |
+  stack test --no-terminal --install-ghc $ARGS --only-dependencies --ghc-options="-O2"
+  stack install --test --no-terminal $ARGS --local-bin-path="." --ghc-options="-O2 -Wall"
+- |
+  mkdir i386
+  sudo -E apt-get -yq install --force-yes ghc:i386
+  stack test --no-terminal --install-ghc --arch i386 $ARGS --only-dependencies --ghc-options="-O2"
+  stack install --test --no-terminal --arch i386 $ARGS --local-bin-path="i386" --ghc-options="-O2 -Wall"
 after_success: chmod +x .travis/github-release.sh && (.travis/github-release.sh "$RELEASEOS" "$TRAVIS_REPO_SLUG" "$TRAVIS_TAG" "Haskell-Console" "i386/Haskell-Console")
