@@ -12,7 +12,6 @@ matrix:
       apt:
         packages:
         - libgmp-dev
-        - libgmp-dev:i386
         - ghc
         - lib32z1
   - env: ARGS="--resolver nightly"
@@ -21,7 +20,6 @@ matrix:
       apt:
         packages:
         - libgmp-dev
-        - libgmp-dev:i386
         - ghc
         - lib32z1
   - env: RELEASEOS="MacOS" ARGS="--resolver lts-6"
@@ -51,6 +49,8 @@ script:
   stack install --test --no-terminal $ARGS --local-bin-path="." --ghc-options="-O2 -Wall"
 - |
   mkdir i386
+  sudo -E apt-get autoremove -y libgmp-dev
+  sudo -E apt-get install -y libgmp-dev:i386
   stack test --no-terminal --install-ghc --arch i386 $ARGS --only-dependencies --ghc-options="-O2"
   stack install --test --no-terminal --arch i386 $ARGS --local-bin-path="i386" --ghc-options="-O2 -Wall"
 after_success: chmod +x .travis/github-release.sh && (.travis/github-release.sh "$RELEASEOS" "$TRAVIS_REPO_SLUG" "$TRAVIS_TAG" "Haskell-Console" "i386/Haskell-Console")
