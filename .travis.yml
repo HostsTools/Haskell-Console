@@ -11,14 +11,15 @@ matrix:
     addons:
       apt:
         packages:
-        - "ghc"
-        - "ghc:i386"
+        - libgmp-dev
+        - libgmp-dev:i386
   - env: ARGS="--resolver nightly"
     compiler: ": #stack nightly"
     addons:
       apt:
         packages:
         - libgmp-dev
+        - libgmp-dev:i386
   - env: RELEASEOS="MacOS" ARGS="--resolver lts-6"
     compiler: ": #stack 7.10.3 osx"
     os: osx
