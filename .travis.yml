@@ -12,6 +12,7 @@ matrix:
       apt:
         packages:
         - libgmp-dev
+        - libgmp-dev:i386
         - ghc
         - lib32z1
   - env: ARGS="--resolver nightly"
@@ -20,6 +21,7 @@ matrix:
       apt:
         packages:
         - libgmp-dev
+        - libgmp-dev:i386
         - ghc
         - lib32z1
   - env: RELEASEOS="MacOS" ARGS="--resolver lts-6"
