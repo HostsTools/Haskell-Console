@@ -13,6 +13,7 @@ matrix:
         packages:
         - libgmp-dev
         - ghc
+        - zip
   - env: ARGS="--resolver nightly"
     compiler: ": #stack nightly"
     addons:
@@ -20,6 +21,7 @@ matrix:
         packages:
         - libgmp-dev
         - ghc
+        - zip
   - env: RELEASEOS="MacOS" ARGS="--resolver lts-6"
     compiler: ": #stack 7.10.3 osx"
     os: osx
@@ -42,7 +44,9 @@ before_install:
 install:
 - if [ -f configure.ac ]; then autoreconf -i; fi
 script:
-- |
-  stack test --no-terminal --install-ghc $ARGS --only-dependencies --ghc-options="-O2"
-  stack install --test --no-terminal $ARGS --local-bin-path="." --ghc-options="-O2 -Wall"
-after_success: chmod +x .travis/github-release.sh && (.travis/github-release.sh "$RELEASEOS" "$TRAVIS_REPO_SLUG" "$TRAVIS_TAG" "Haskell-Console")
+- stack test --no-terminal --install-ghc $ARGS --only-dependencies --ghc-options="-O2"
+- stack install --test --no-terminal $ARGS --local-bin-path="." --ghc-options="-O2 -Wall"
+after_success:
+- zip Haskell-Console.zip Haskell-Console
+- chmod +x .travis/github-release.sh
+- cd .travis && ./github-release.sh "$RELEASEOS" "$TRAVIS_REPO_SLUG" "Haskell-Console.zip"
